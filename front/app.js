@@ -547,3 +547,34 @@ formEl.addEventListener("submit", (event) => {
   }
   saveCar(data);
 });
+
+document
+  .getElementById("load-samples-btn")
+  .addEventListener("click", async () => {
+    try {
+      const samples = await (await fetch("sample-cars.json")).json();
+      let added = 0;
+
+      for (const car of samples) {
+        const response = await fetch(`${API_URL}/cars/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(car),
+        });
+
+        // 409: такий VIN уже є в базі
+        if (response.status === 201) {
+          added += 1;
+        } else if (response.status !== 409) {
+          showHttpError(response.status);
+          return;
+        }
+      }
+
+      hideError();
+      showSuccess(`Додано прикладів: ${added}`);
+    } catch (error) {
+      console.error("Не вдалося завантажити приклади:", error);
+      showError(ERROR_MESSAGES.network);
+    }
+  });
