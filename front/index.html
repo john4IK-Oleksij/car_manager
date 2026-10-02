@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="uk">
+
+<head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <title>Car Catalog</title>
+   <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+   <header class="header">
+      <h1>Car Catalog</h1>
+      <button id="add-car-btn" type="button">Додати автомобіль</button>
+   </header>
+
+   <div id="error-banner" class="error-banner" role="alert" hidden></div>
+   <div id="success-banner" class="success-banner" role="status" hidden></div>
+
+   <!-- Форма додавання / редагування -->
+   <div id="car-modal" class="modal" hidden>
+      <div class="modal-content">
+         <h2 id="car-modal-title">Додати автомобіль</h2>
+
+         <form id="car-form" novalidate>
+            <label>
+               Марка і модель
+               <input id="field-brand-model" name="brand_model" type="text" />
+               <span class="field-error" data-error-for="brand_model"></span>
+            </label>
+
+            <label>
+               Виробник / дилер
+               <input id="field-manufacturer" name="manufacturer" type="text" />
+               <span class="field-error" data-error-for="manufacturer"></span>
+            </label>
+
+            <label>
+               VIN
+               <input id="field-vin" name="vin" type="text" maxlength="17" />
+               <span class="field-error" data-error-for="vin"></span>
+            </label>
+
+            <label>
+               Тип кузова
+               <select id="field-body-type" name="body_type">
+                  <option value="">Оберіть тип кузова</option>
+                  <option value="sedan">sedan</option>
+                  <option value="crossover">crossover</option>
+                  <option value="hatchback">hatchback</option>
+               </select>
+               <span class="field-error" data-error-for="body_type"></span>
+            </label>
+
+            <label>
+               Тип пального
+               <select id="field-fuel-type" name="fuel_type">
+                  <option value="">Оберіть тип пального</option>
+                  <option value="petrol">petrol</option>
+                  <option value="diesel">diesel</option>
+                  <option value="electric">electric</option>
+                  <option value="hybrid">hybrid</option>
+               </select>
+               <span class="field-error" data-error-for="fuel_type"></span>
+            </label>
+
+            <label>
+               Об'єм двигуна, л
+               <input id="field-engine-volume" name="engine_volume" type="number" min="0" step="0.1" />
+               <span class="field-error" data-error-for="engine_volume"></span>
+            </label>
+
+            <label>
+               Ціна
+               <input id="field-price" name="price" type="number" min="0" step="0.01" />
+               <span class="field-error" data-error-for="price"></span>
+            </label>
+
+            <label>
+               Рейтинг (0-5)
+               <input id="field-rating" name="rating" type="number" min="0" max="5" step="0.1" />
+               <span class="field-error" data-error-for="rating"></span>
+            </label>
+
+            <label>
+               Рік випуску
+               <input id="field-release-year" name="release_year" type="number" min="1900" step="1" />
+               <span class="field-error" data-error-for="release_year"></span>
+            </label>
+
+            <label>
+               Опис
+               <textarea id="field-description" name="description" rows="3"></textarea>
+               <span class="field-error" data-error-for="description"></span>
+            </label>
+
+            <label>
+               Додаткові опції (через кому)
+               <input id="field-options" name="options" type="text" />
+               <span class="field-error" data-error-for="options"></span>
+            </label>
+
+            <label id="availability-field" hidden>
+               Доступність
+               <select id="field-is-available" name="is_available">
+                  <option value="true">Доступний</option>
+                  <option value="false">Недоступний</option>
+               </select>
+            </label>
+
+            <div class="modal-actions">
+               <button id="switch-edit-btn" type="button" hidden>Редагувати</button>
+               <button type="submit" id="save-car-btn">Зберегти</button>
+               <button id="cancel-car-btn" type="button">Закрити</button>
+            </div>
+         </form>
+      </div>
+   </div>
+
+   <main class="container">
+      <!-- Фільтри -->
+      <section class="filters">
+         <label>
+            Марка
+            <input id="filter-brand" type="text" placeholder="Наприклад, Toyota" />
+         </label>
+
+         <label>
+            Тип пального
+            <select id="filter-fuel-type">
+               <option value="">Усі</option>
+               <option value="petrol">petrol</option>
+               <option value="diesel">diesel</option>
+               <option value="electric">electric</option>
+               <option value="hybrid">hybrid</option>
+            </select>
+         </label>
+
+         <label>
+            Мінімальний рік
+            <input id="filter-min-release-year" type="number" min="1900" step="1" />
+            <span class="field-error" id="filter-year-error"></span>
+         </label>
+
+         <button id="filter-apply" type="button">Знайти</button>
+         <button id="filter-clear" type="button">Очистити</button>
+      </section>
+
+      <p id="status" class="status" hidden></p>
+
+      <!-- Список автомобілів і пагінація ліво-право -->
+      <section id="pagination" class="pagination" hidden>
+         <div class="table-wrap">
+            <table id="cars-table" class="cars-table" hidden>
+               <thead>
+                  <tr>
+                     <th>Автомобіль</th>
+                     <th>Виробник</th>
+                     <th>VIN</th>
+                     <th>Кузов</th>
+                     <th>Пальне</th>
+                     <th>Двигун</th>
+                     <th>Ціна</th>
+                     <th>Рейтинг</th>
+                     <th>Рік</th>
+                     <th>Доступний</th>
+                     <th>Опції</th>
+                     <th>Додано</th>
+                     <th>Дії</th>
+                  </tr>
+               </thead>
+               <tbody id="cars-body"></tbody>
+            </table>
+         </div>
+
+         <div class="page-nav">
+            <button id="page-prev" type="button">&#8592; Назад</button>
+            <span id="page-number" class="page-number">Сторінка 1</span>
+            <button id="page-next" type="button">Вперед &#8594;</button>
+         </div>
+      </section>
+   </main>
+
+   <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,400 @@
+:root {
+  --bg: #f4f5f7;
+  --surface: #fff;
+  --text: #1f2933;
+  --muted: #52606d;
+  --primary: #2c3e50;
+  --primary-hover: #1f2d3a;
+  --secondary: #e4e7eb;
+  --secondary-hover: #cbd2d9;
+  --danger: #b42318;
+  --danger-hover: #912018;
+  --border: #d9dee3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Шапка */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--primary);
+  color: #fff;
+  padding: 16px 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+/* Кнопки */
+
+button {
+  font: inherit;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.header button {
+  background: #fff;
+  color: var(--primary);
+}
+
+.header button:hover {
+  background: var(--secondary);
+}
+
+.modal-actions button[type="button"],
+.row-actions button {
+  background: var(--secondary);
+  color: var(--text);
+}
+
+.modal-actions button[type="button"]:hover,
+.row-actions button:hover {
+  background: var(--secondary-hover);
+}
+
+.row-actions button.danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.row-actions button.danger:hover {
+  background: var(--danger-hover);
+}
+
+/* Банер помилок */
+
+.error-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px 24px;
+  background: var(--danger);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.error-banner[hidden] {
+  display: none;
+}
+
+.success-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px 24px;
+  background: #067647;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.success-banner[hidden] {
+  display: none;
+}
+
+.table-wrap {
+  overflow: visible;
+}
+
+.cars-table tbody tr {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#filter-clear {
+  background: var(--secondary);
+  color: var(--text);
+}
+
+#filter-clear:hover {
+  background: var(--secondary-hover);
+}
+
+.pagination {
+  align-items: center;
+}
+
+/* Контейнер, фільтри, пагінація */
+
+.container {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  background: var(--surface);
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--text);
+}
+
+.pagination {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.table-wrap {
+  min-width: 0;
+}
+
+.page-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-number {
+  color: var(--muted);
+}
+
+.status {
+  text-align: center;
+  color: var(--muted);
+  padding: 24px 0;
+}
+
+/* Результати: рядки таблиці як картки у сітці */
+
+.cars-table {
+  display: block;
+  width: 100%;
+}
+
+.cars-table thead {
+  display: none;
+}
+
+.cars-table tbody {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 999px) {
+  .cars-table tbody {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .cars-table tbody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cars-table tr {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.cars-table tbody tr:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.cars-table td {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.cars-table td::before {
+  flex: 0 0 90px;
+  color: var(--muted);
+}
+
+.cars-table td:nth-child(1) {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cars-table td:nth-child(1)::before,
+.cars-table td.row-actions::before {
+  content: none;
+}
+
+.cars-table td:nth-child(2)::before {
+  content: "Виробник";
+}
+.cars-table td:nth-child(3)::before {
+  content: "VIN";
+}
+.cars-table td:nth-child(4)::before {
+  content: "Кузов";
+}
+.cars-table td:nth-child(5)::before {
+  content: "Пальне";
+}
+.cars-table td:nth-child(6)::before {
+  content: "Двигун";
+}
+.cars-table td:nth-child(7)::before {
+  content: "Ціна";
+}
+.cars-table td:nth-child(8)::before {
+  content: "Рейтинг";
+}
+.cars-table td:nth-child(9)::before {
+  content: "Рік";
+}
+.cars-table td:nth-child(10)::before {
+  content: "Доступний";
+}
+.cars-table td:nth-child(11)::before {
+  content: "Опції";
+}
+.cars-table td:nth-child(12)::before {
+  content: "Додано";
+}
+
+.cars-table[hidden] {
+  display: none;
+}
+
+.pagination[hidden] {
+  display: none;
+}
+
+.cars-table td.row-actions {
+  margin-top: 8px;
+}
+
+.row-actions button {
+  padding: 4px 10px;
+}
+
+/* Модальне вікно і форма */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 6px;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+#car-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#car-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+#car-form label[hidden] {
+  display: none;
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
