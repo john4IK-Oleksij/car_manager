@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.database import engine
 from app.models import Base
@@ -17,6 +18,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Car catalog", lifespan=lifespan)
 
 app.include_router(car.router)
+
+app.mount("/", StaticFiles(directory="front", html=True), name="front")
 
 app.add_middleware(
     CORSMiddleware,
