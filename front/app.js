@@ -72,6 +72,7 @@ let appliedFilters = {
 };
 
 let currentOffset = 0;
+const totalCarsCache = new Map();
 
 function renderCars(cars) {
   bodyEl.innerHTML = "";
@@ -140,44 +141,129 @@ function renderCars(cars) {
   tableEl.hidden = false;
 }
 
-function buildQuery() {
+function buildFilterParams(filters = appliedFilters) {
   const params = new URLSearchParams();
 
-  if (appliedFilters.brand) {
-    params.set("brand", appliedFilters.brand);
+  if (filters.brand) {
+    params.set("brand", filters.brand);
   }
 
-  if (appliedFilters.fuelType) {
-    params.set("fuel_type", appliedFilters.fuelType);
+  if (filters.fuelType) {
+    params.set("fuel_type", filters.fuelType);
   }
 
-  if (appliedFilters.minReleaseYear) {
-    params.set("min_release_year", appliedFilters.minReleaseYear);
+  if (filters.minReleaseYear) {
+    params.set("min_release_year", filters.minReleaseYear);
   }
 
-  params.set("limit", PAGE_LIMIT);
-  params.set("offset", currentOffset);
+  return params;
+}
 
+function buildQuery(
+  limit = PAGE_LIMIT,
+  offset = currentOffset,
+  filters = appliedFilters,
+) {
+  const params = buildFilterParams(filters);
+  params.set("limit", limit);
+  params.set("offset", offset);
   return params.toString();
+}
+
+async function hasCarAtOffset(offset, filters) {
+  const response = await fetch(
+    `${API_URL}/cars/?${buildQuery(1, offset, filters)}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const cars = await response.json();
+  if (!Array.isArray(cars)) {
+    throw new Error("Сервер повернув некоректний список автомобілів");
+  }
+  return cars.length > 0;
+}
+
+async function countMatchingCars(filters) {
+  if (!(await hasCarAtOffset(0, filters))) {
+    return 0;
+  }
+
+  // The API returns only a page, so find the first empty offset to count matches.
+  let low = 0;
+  let high = 1;
+  while (await hasCarAtOffset(high, filters)) {
+    low = high;
+    high *= 2;
+
+    if (!Number.isSafeInteger(high)) {
+      throw new Error("Забагато автомобілів для підрахунку сторінок");
+    }
+  }
+
+  while (high - low > 1) {
+    const middle = Math.floor((low + high) / 2);
+    if (await hasCarAtOffset(middle, filters)) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+
+  return high;
+}
+
+async function getTotalCars(filters) {
+  const cacheKey = JSON.stringify(filters);
+  if (!totalCarsCache.has(cacheKey)) {
+    const countPromise = countMatchingCars(filters);
+    totalCarsCache.set(cacheKey, countPromise);
+
+    try {
+      return await countPromise;
+    } catch (error) {
+      totalCarsCache.delete(cacheKey);
+      throw error;
+    }
+  }
+
+  return totalCarsCache.get(cacheKey);
 }
 
 async function loadCars() {
   hasSearched = true;
+  const filters = { ...appliedFilters };
+  const offset = currentOffset;
+  const limit = PAGE_LIMIT;
   paginationEl.hidden = false;
   statusEl.textContent = "Завантаження...";
   statusEl.hidden = false;
   tableEl.hidden = true;
 
   try {
-    const response = await fetch(`${API_URL}/cars/?${buildQuery()}`);
+    const response = await fetch(
+      `${API_URL}/cars/?${buildQuery(limit, offset, filters)}`,
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
     const cars = await response.json();
+    const totalCars = await getTotalCars(filters);
+
+    if (totalCars > 0 && currentOffset >= totalCars) {
+      currentOffset = Math.floor((totalCars - 1) / PAGE_LIMIT) * PAGE_LIMIT;
+      return loadCars();
+    }
+    if (totalCars === 0) {
+      currentOffset = 0;
+    }
+
     renderCars(cars);
-    updatePagination(cars.length);
+    updatePagination(totalCars);
     hideError();
   } catch (error) {
     console.error("Не вдалося завантажити автомобілі:", error);
@@ -186,16 +272,20 @@ async function loadCars() {
 
     if (error instanceof TypeError) {
       showError(ERROR_MESSAGES.network);
-    } else {
+    } else if (/^HTTP \d+$/.test(error.message)) {
       showHttpError(Number(error.message.replace("HTTP ", "")));
+    } else {
+      showError(error.message);
     }
   }
 }
 
-function updatePagination(count) {
-  pageNumberEl.textContent = `Сторінка ${currentOffset / PAGE_LIMIT + 1}`;
+function updatePagination(totalCars) {
+  const totalPages = Math.ceil(totalCars / PAGE_LIMIT);
+  const currentPage = totalPages === 0 ? 0 : currentOffset / PAGE_LIMIT + 1;
+  pageNumberEl.textContent = `Сторінка ${currentPage}/${totalPages}`;
   prevBtn.disabled = currentOffset === 0;
-  nextBtn.disabled = count < PAGE_LIMIT;
+  nextBtn.disabled = currentPage >= totalPages;
 }
 
 applyBtn.addEventListener("click", () => {
@@ -483,6 +573,7 @@ async function saveCar(data) {
       hideError();
       closeModal();
       showSuccess(isEditing ? "Зміни збережено" : "Автомобіль додано");
+      totalCarsCache.clear();
       if (hasSearched) {
         loadCars();
       }
@@ -508,6 +599,7 @@ async function deleteCar(car) {
     if (response.status === 204) {
       hideError();
       showSuccess("Автомобіль видалено");
+      totalCarsCache.clear();
       if (bodyEl.children.length === 1 && currentOffset > 0) {
         currentOffset = Math.max(0, currentOffset - PAGE_LIMIT);
       }
