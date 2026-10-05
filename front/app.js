@@ -578,3 +578,4 @@ document
       showError(ERROR_MESSAGES.network);
     }
   });
+  loadCars();
