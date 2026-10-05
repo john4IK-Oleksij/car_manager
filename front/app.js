@@ -578,4 +578,5 @@ document
       showError(ERROR_MESSAGES.network);
     }
   });
-  loadCars();
+ console.log("JS START");
+ loadCars();
